@@ -1,88 +1,74 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Rabisco — PWA</title>
 
+  <!-- Manifest e tema -->
   <link rel="manifest" href="/Rabisco/manifest.json">
-  <meta name="theme-color" content="#222">
+  <meta name="theme-color" content="#111111">
+
+  <!-- iOS (melhora comportamento em iPhone) -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <link rel="apple-touch-icon" href="/Rabisco/icon-192.png">
+  <meta name="apple-mobile-web-app-title" content="Rabisco">
+
   <style>
-    body {
-      margin: 0;
-      height: 100vh;
-      background: #111;
-      color: #fff;
-      font-family: Arial, sans-serif;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      text-align: center;
-      padding: 20px;
-    }
-    button {
-      padding: 12px 18px;
-      border: none;
-      border-radius: 8px;
-      font-size: 16px;
-      background: #ffca28;
-      font-weight: bold;
-      cursor: pointer;
-      margin-top: 15px;
-      display: none;
-    }
+    body{margin:0;height:100vh;display:flex;align-items:center;justify-content:center;background:#111;color:#fff;font-family:Arial,Helvetica,sans-serif}
+    .card{max-width:520px;padding:28px;border-radius:12px;background:linear-gradient(180deg,#222,#111);text-align:center}
+    .btn{display:none;margin-top:14px;padding:12px 18px;border-radius:8px;border:0;background:#ffca28;color:#111;font-weight:700;cursor:pointer}
+    a{color:#04C4D9}
+    small{opacity:.8;display:block;margin-top:12px}
   </style>
 </head>
 <body>
+  <div class="card">
+    <h1>Rabisco</h1>
+    <p>App PWA demo. Se tudo estiver ok, clique para instalar.</p>
 
-  <div>
-    <h1>Rabisco — PWA</h1>
-    <p>Se estiver tudo certo, o botão de instalar vai aparecer abaixo.</p>
+    <button id="btnInstall" class="btn">Instalar App</button>
+    <small id="status">Aguardando critérios do navegador...</small>
 
-    <button id="btnInstall">Instalar App</button>
-
-    <p id="status" style="opacity:.7;margin-top:12px;">
-      Aguardando critérios do navegador...
+    <p style="margin-top:18px">
+      <a href="/Rabisco/offline.html" target="_blank">Página offline (teste)</a>
     </p>
   </div>
 
   <script>
-    // Registrar service worker usando caminho absoluto do repo Rabisco
-    if ("serviceWorker" in navigator) {
-      navigator.serviceWorker.register("/Rabisco/service-worker.js")
-        .then(() => console.log("SW registrado"))
-        .catch(err => console.error("SW erro:", err));
+    // 1) Registrar service worker (caminho absoluto para GitHub Pages)
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/Rabisco/service-worker.js')
+        .then(() => console.log('SW registrado'))
+        .catch(err => console.error('Erro registrando SW:', err));
     }
 
-    let installEvent = null;
-    const btn = document.getElementById("btnInstall");
-    const status = document.getElementById("status");
+    // 2) beforeinstallprompt handling
+    let deferredPrompt = null;
+    const btn = document.getElementById('btnInstall');
+    const status = document.getElementById('status');
 
-    window.addEventListener("beforeinstallprompt", (e) => {
+    window.addEventListener('beforeinstallprompt', (e) => {
       e.preventDefault();
-      installEvent = e;
-      btn.style.display = "inline-block";
-      status.textContent = "App pronto para instalar!";
+      deferredPrompt = e;
+      btn.style.display = 'inline-block';
+      status.textContent = 'App pronto para instalar!';
     });
 
-    btn.addEventListener("click", async () => {
-      if (!installEvent) return;
-
-      installEvent.prompt();
-      const choice = await installEvent.userChoice;
-
-      status.textContent = choice.outcome === "accepted"
-        ? "App instalado!"
-        : "Instalação cancelada.";
-
-      installEvent = null;
-      btn.style.display = "none";
+    btn.addEventListener('click', async () => {
+      if (!deferredPrompt) return;
+      deferredPrompt.prompt();
+      const choice = await deferredPrompt.userChoice;
+      status.textContent = choice.outcome === 'accepted' ? 'Usuário aceitou instalar.' : 'Usuário rejeitou a instalação.';
+      deferredPrompt = null;
+      btn.style.display = 'none';
     });
 
-    if (window.matchMedia("(display-mode: standalone)").matches) {
-      status.textContent = "Rodando como aplicativo.";
+    // Optional: detecta modo standalone
+    if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true) {
+      status.textContent = 'Rodando como aplicativo.';
     }
   </script>
-
 </body>
 </html>
