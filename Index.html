@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Rabisco — PWA</title>
+
+  <link rel="manifest" href="/Rabisco/manifest.json">
+  <meta name="theme-color" content="#222">
+  <style>
+    body {
+      margin: 0;
+      height: 100vh;
+      background: #111;
+      color: #fff;
+      font-family: Arial, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      padding: 20px;
+    }
+    button {
+      padding: 12px 18px;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      background: #ffca28;
+      font-weight: bold;
+      cursor: pointer;
+      margin-top: 15px;
+      display: none;
+    }
+  </style>
+</head>
+<body>
+
+  <div>
+    <h1>Rabisco — PWA</h1>
+    <p>Se estiver tudo certo, o botão de instalar vai aparecer abaixo.</p>
+
+    <button id="btnInstall">Instalar App</button>
+
+    <p id="status" style="opacity:.7;margin-top:12px;">
+      Aguardando critérios do navegador...
+    </p>
+  </div>
+
+  <script>
+    // Registrar service worker usando caminho absoluto do repo Rabisco
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker.register("/Rabisco/service-worker.js")
+        .then(() => console.log("SW registrado"))
+        .catch(err => console.error("SW erro:", err));
+    }
+
+    let installEvent = null;
+    const btn = document.getElementById("btnInstall");
+    const status = document.getElementById("status");
+
+    window.addEventListener("beforeinstallprompt", (e) => {
+      e.preventDefault();
+      installEvent = e;
+      btn.style.display = "inline-block";
+      status.textContent = "App pronto para instalar!";
+    });
+
+    btn.addEventListener("click", async () => {
+      if (!installEvent) return;
+
+      installEvent.prompt();
+      const choice = await installEvent.userChoice;
+
+      status.textContent = choice.outcome === "accepted"
+        ? "App instalado!"
+        : "Instalação cancelada.";
+
+      installEvent = null;
+      btn.style.display = "none";
+    });
+
+    if (window.matchMedia("(display-mode: standalone)").matches) {
+      status.textContent = "Rodando como aplicativo.";
+    }
+  </script>
+
+</body>
+</html>
