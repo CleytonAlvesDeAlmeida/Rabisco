@@ -2,8 +2,9 @@
   "name": "Rabisco",
   "short_name": "Rabisco",
   "start_url": "/Rabisco/",
+  "scope": "/Rabisco/",
   "display": "standalone",
-  "background_color": "#111",
+  "background_color": "#111111",
   "theme_color": "#ffca28",
   "icons": [
     {
